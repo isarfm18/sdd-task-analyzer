@@ -155,3 +155,32 @@ def test_analyze_tasks_returns_zero_completion_metrics_for_pending_tasks() -> No
         },
         "taxa_atraso_percentual": 0.0,
     }
+
+def test_analyze_tasks_rejects_completed_task_without_completion_date() -> None:
+    """Raise TaskValidationError when a completed task has no completion date."""
+    task = _task(
+        1,
+        "Alta",
+        "2025-01-01T09:00:00",
+        "2025-01-02T09:00:00",
+        "concluida",
+    )
+
+    with pytest.raises(TaskValidationError):
+        analyze_tasks([task])
+
+
+def test_analyze_tasks_does_not_mark_deadline_completion_as_delayed() -> None:
+    """Do not count a task completed exactly at the deadline as delayed."""
+    task = _task(
+        1,
+        "Alta",
+        "2025-01-01T09:00:00",
+        "2025-01-01T12:00:00",
+        "concluida",
+        "2025-01-01T12:00:00",
+    )
+
+    result = analyze_tasks([task])
+
+    assert result["taxa_atraso_percentual"] == 0.0
