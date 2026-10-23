@@ -184,3 +184,20 @@ def test_analyze_tasks_does_not_mark_deadline_completion_as_delayed() -> None:
     result = analyze_tasks([task])
 
     assert result["taxa_atraso_percentual"] == 0.0
+
+
+def test_fusos_horarios_incompativeis():
+    """Verifica o tratamento de datas com fusos incompatíveis."""
+    tarefa = {
+        "id": 100,
+        "titulo": "Teste de fuso horário",
+        "tipo": "Desenvolvimento",
+        "prioridade": "Alta",
+        "data_criacao": "2026-10-20T09:00:00",
+        "data_prazo": "2026-10-20T18:00:00+00:00",
+        "data_conclusao": "2026-10-20T15:00:00+00:00",
+        "status": "concluida",
+    }
+
+    with pytest.raises(TaskValidationError, match="fuso"):
+        analyze_tasks([tarefa])
