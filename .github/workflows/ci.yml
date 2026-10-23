@@ -9,6 +9,7 @@ on:
 
 jobs:
   tests:
+    name: Testes Python
     runs-on: ubuntu-latest
 
     steps:
@@ -23,7 +24,24 @@ jobs:
       - name: Instalar dependências
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          python -m pip install -r requirements.txt
 
       - name: Executar testes automatizados
         run: python -m pytest tests/test_harness.py -v
+
+  docker:
+    name: Testes Docker
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Verificar Docker Compose
+        run: docker compose version
+
+      - name: Construir imagem Docker
+        run: docker compose build
+
+      - name: Executar testes no container
+        run: docker compose run --rm task-analyzer
