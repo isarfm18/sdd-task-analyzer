@@ -1,0 +1,86 @@
+# TaskAnalyzer - contrato operacional implementado na Fase 2 e validado na Fase 3.
+# Fonte de verdade operacional: task_analyzer_spec.md.
+# O SDD original (system_design_document.pdf) apresenta um escopo mais amplo;
+# este arquivo NAO declara que todas as funcionalidades originais foram implementadas.
+project:
+  name: TaskAnalyzer
+  phase: 3
+  language: Python
+  minimum_python_version: '3.11'
+  methodology: Spec-Driven Development (SDD)
+  governance_file: CONTEXT_RULES.md
+  operational_specification: specs/task_analyzer_spec.md
+  original_specification: specs/system_design_document.pdf
+
+interface:
+  module: src.task_analyzer
+  function: analyze_tasks
+  input_type: list[dict]
+  output_type: dict
+  exception: TaskValidationError
+
+input_fields:
+  id:
+    types: [str, int]
+    required: true
+  titulo:
+    types: [str]
+    required: true
+  tipo:
+    types: [str]
+    required: true
+  prioridade:
+    types: [str]
+    required: true
+    allowed_values: [Alta, Média, Baixa]
+  data_criacao:
+    types: [datetime, iso_datetime_string]
+    required: true
+  data_prazo:
+    types: [datetime, iso_datetime_string]
+    required: true
+  data_conclusao:
+    types: [datetime, iso_datetime_string, 'null']
+    required_for_completed_tasks: true
+  status:
+    types: [str]
+    required: true
+    recognized_for_metrics: [concluida, pendente]
+
+implemented_outputs:
+  total_tarefas: int
+  total_concluidas: int
+  total_pendentes: int
+  tempo_medio_conclusao_horas: float
+  tempo_medio_por_prioridade_horas:
+    type: dict
+    keys: [Alta, Média, Baixa]
+    value_type: float
+  taxa_atraso_percentual: float
+
+implemented_business_rules:
+  - Apenas tarefas concluidas entram nas metricas temporais.
+  - Uma tarefa concluida precisa ter data_conclusao.
+  - Data de conclusao anterior a criacao gera TaskValidationError.
+  - Datas com fusos horarios incompativeis geram TaskValidationError.
+  - Atraso ocorre somente quando a conclusao e posterior ao prazo.
+  - Medias e taxas sem tarefas concluidas retornam 0.0.
+
+quality_and_delivery:
+  test_framework: pytest
+  test_file: tests/test_harness.py
+  expected_tests: 7
+  dockerfile: Dockerfile
+  compose_file: docker-compose.yml
+  ci_platform: GitHub Actions
+  required_ci_branches: [main, develop]
+  human_review_required: true
+
+original_sdd_scope_not_in_operational_contract:
+  - tempo_medio_por_tipo
+  - media_de_tempo_em_atraso
+  - contagem_de_tarefas_por_prioridade
+  - indicadores_de_gargalos
+notes:
+  - Este YAML documenta o escopo operacional implementado e nao substitui o SDD original.
+  - Para ampliar o escopo, revisar primeiro o contrato SDD e os testes.
